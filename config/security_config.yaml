@@ -1,0 +1,123 @@
+# ML Security RBAC Platform - Security Configuration
+# Author: Gabriel Demetrios Lafis
+#
+# This file provides default configuration values.
+# Override with environment variables in production (see src/config/settings.py).
+
+app:
+  name: "ML Security RBAC Platform"
+  version: "1.0.0"
+  environment: "development"
+  debug: false
+  log_level: "INFO"
+
+auth:
+  jwt_algorithm: "HS256"
+  access_token_expire_minutes: 30
+  refresh_token_expire_days: 7
+  password_min_length: 12
+  password_require_uppercase: true
+  password_require_lowercase: true
+  password_require_digit: true
+  password_require_special: true
+  password_max_age_days: 90
+  max_login_attempts: 5
+  lockout_duration_minutes: 30
+
+rbac:
+  enable_hierarchical_roles: true
+  max_roles_per_user: 10
+  cache_ttl_seconds: 300
+  default_role: "ml_viewer"
+
+  roles:
+    ml_admin:
+      description: "ML Platform Administrator with full access"
+      level: 100
+      permissions:
+        - "*"
+
+    ml_engineer:
+      description: "ML Engineer - train, deploy, manage models"
+      level: 60
+      parent_role: "ml_viewer"
+      permissions:
+        - "model:read"
+        - "model:write"
+        - "model:execute"
+        - "dataset:read"
+        - "dataset:write"
+        - "experiment:read"
+        - "experiment:write"
+        - "experiment:execute"
+        - "endpoint:read"
+        - "endpoint:write"
+        - "endpoint:execute"
+
+    data_scientist:
+      description: "Data Scientist - experiment and analyze"
+      level: 50
+      parent_role: "ml_viewer"
+      permissions:
+        - "model:read"
+        - "model:write"
+        - "dataset:read"
+        - "dataset:write"
+        - "experiment:read"
+        - "experiment:write"
+        - "experiment:execute"
+        - "endpoint:read"
+
+    ml_ops:
+      description: "MLOps Engineer - deploy and monitor"
+      level: 55
+      parent_role: "ml_viewer"
+      permissions:
+        - "model:read"
+        - "model:execute"
+        - "endpoint:read"
+        - "endpoint:write"
+        - "endpoint:execute"
+        - "endpoint:admin"
+        - "experiment:read"
+
+    ml_viewer:
+      description: "ML Viewer - read-only access"
+      level: 10
+      permissions:
+        - "model:read"
+        - "dataset:read"
+        - "experiment:read"
+        - "endpoint:read"
+
+    auditor:
+      description: "Security Auditor - audit and compliance access"
+      level: 40
+      permissions:
+        - "audit:read"
+        - "model:read"
+        - "dataset:read"
+        - "experiment:read"
+        - "endpoint:read"
+        - "report:read"
+        - "report:write"
+
+audit:
+  enable_hash_chain: true
+  retention_days: 365
+  batch_size: 100
+
+rate_limiting:
+  enabled: true
+  max_requests_per_minute: 120
+  burst_size: 20
+
+cors:
+  allowed_origins:
+    - "http://localhost:3000"
+    - "http://localhost:8000"
+  allow_credentials: true
+  allow_methods:
+    - "*"
+  allow_headers:
+    - "*"
